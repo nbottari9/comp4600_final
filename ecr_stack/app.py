@@ -7,7 +7,7 @@ from ecr_stack.ecr_stack_stack import EcrStackStack
 
 
 app = cdk.App()
-EcrStackStack(app, "EcrStackStack",
+EcrStackStack(app, "GcpEcrStack",
     # If you don't specify 'env', this stack will be environment-agnostic.
     # Account/Region-dependent features and context lookups will not work,
     # but a single synthesized template can be deployed anywhere.
