@@ -29,7 +29,7 @@ case "$1" in
         ramalama --engine podman rag "${html_files[@]}" "$output_dir/"
         ;;
     ecr)
-        echo "Pushing to ecr..."
+        echo "Pushing to ecr (podman)..."
         ramalama --engine podman rag "${html_files[@]}" "$ecr_repo"
         ;;
     *)
@@ -38,5 +38,5 @@ case "$1" in
         exit 1
         ;;
     
-    
+
 esac
