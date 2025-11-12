@@ -1,0 +1,90 @@
+name: ECR Stack Actions
+run-name: ${{ github.actor }} is deploying the ECR stack
+on:
+  #   push:
+  #     branches:
+  #       - main
+  workflow_dispatch
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-cdk-stack:
+    name: Deploy CDK stack
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          cd ecr_stack
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements.txt
+          npm install -g aws-cdk
+
+      - name: Login to AWS
+        uses: aws-actions/configure-aws-credentials@main
+        with:
+          role-to-assume: arn:aws:iam::620339869704:role/gcp-github-oidc-trust-policy
+          aws-region: us-east-1
+
+      - name: CDK Deploy
+        shell: bash
+        run: |
+          cd ecr_stack
+          source .venv/bin/activate
+          cdk deploy --require-approval never
+  generate-rag:
+    name: Generate RAG Database
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Login to AWS
+        uses: aws-actions/configure-aws-credentials@main
+        with:
+          role-to-assume: arn:aws:iam::620339869704:role/gcp-github-oidc-trust-policy
+          aws-region: us-east-1
+
+      - name: Get Data Download Lambda function name
+        id: get-data-download-lambda-name
+        run: |
+          FUNC_NAME=$(aws cloudformation describe-stack-resources \
+          --stack-name GcpEcrStack \
+          --logical-resource-id Data-Downloading-Function \
+          --query 'StackResources[0].PhysicalResourceId' \
+          --output text)
+          echo "function_name=$FUNC_NAME" >> $GITHUB_OUTPUT
+
+      - name: Run data download function
+        shell: bash
+        run: |
+          aws lambda invoke \
+          --function-name "${{ steps.get-data-download-lambda-name.outputs.function_name }}"
+
+      - name: Get vectorization lambda name
+        id: get-vectorization-lambda-name
+        run: |
+          FUNC_NAME=$(aws cloudformation describe-stack-resources \
+          --stack-name GcpEcrStack \
+          --logical-resource-id Vectorization-Function \
+          --query 'StackResources[0].PhysicalResourceId' \
+          --output text)
+          echo "function_name=$FUNC_NAME" >> $GITHUB_OUTPUT
+
+      - name: Run vectorization function
+        shell: bash
+        run: |
+          aws lambda invoke \
+          --function-name "${{ steps.get-vectorization-lambda-name.outputs.function_name }}"
