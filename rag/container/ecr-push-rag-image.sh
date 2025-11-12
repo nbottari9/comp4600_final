@@ -32,16 +32,16 @@ function type_and_run() {
 # ==== START ====
 
 header "Step 1: Authenticate with ECR"
-type_and_run "aws ecr get-login-password --region us-east-1 | podman login --username AWS --password-stdin 620339869704.dkr.ecr.us-east-1.amazonaws.com"
+type_and_run "aws ecr get-login-password --region us-east-1 | ramalama login --username AWS --password-stdin 620339869704.dkr.ecr.us-east-1.amazonaws.com"
 
 header "Step 2: Obtain RAG Data"
 type_and_run "curl https://www.uml.edu/sciences/computer-science/people/weis-johannes.aspx -o prof-weis.html"
 
-header "Step 3: Make our RAG Data directory"
-type_and_run "mkdir rag-data"
+header "Step 3: Build our simple RAG database (vectorize)"
+type_and_run "ramalama rag ./prof-weis.html rag-db"
 
-header "Step 4: Build our simple RAG database (vectorize)"
-type_and_run "ramalama rag ./prof-weis.html 620339869704.dkr.ecr.us-east-1.amazonaws.com/gcp_ecr_repository:latest"
+header "Step 4: Push our OCI Image to ECR"
+type_and_run "podman push rag-db 620339869704.dkr.ecr.us-east-1.amazonaws.com/gcp_ecr_repository:latest"
 
 header "Done!"
 
