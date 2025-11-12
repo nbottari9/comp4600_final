@@ -29,17 +29,19 @@ class EcrStackStack(Stack):
         # This will store raw HTML files that are to be vectorized
         # Will trigger a lambda to vectorize them
         html_data_bucket = s3.Bucket(
+            self,
             "html_data_bucket",
             bucket_name= RESOURCE_PREFIX + "html_data_bucket",
             removal_policy=RemovalPolicy.DESTROY,
             auto_delete_objects=True,
         )
         
+        # Data download IAM stuff
         data_download_function_policy_doc = iam.PolicyDocument(
             statements=[
                 iam.PolicyStatement(
-                    actions=["s3:GetObject"],
-                    resources=["arn:aws:s3:::*/*"],
+                    actions=["s3:GetObject", "s3:PutObject"],
+                    resources=[html_data_bucket._get_resource_arn_attribute()],
                     effect=iam.Effect.ALLOW
                 )
             ]
@@ -52,16 +54,11 @@ class EcrStackStack(Stack):
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole")
+            ],
+            inline_policies=[
+                data_download_function_policy_doc
             ]
         )
-        
-        # rag_process_function_policy = iam.Policy(
-        #    self,
-        #    "RAG-Processing-Function-Policy",
-        #    policy_name= RESOURCE_PREFIX + "rag-processing-func-policy",
-        #    document= rag_process_function_policy_doc,
-        #    roles=[rag_process_function_role]
-        # )
         
         # Data Downloading Lambda
         data_download_lambda = _lambda.Function(
@@ -71,7 +68,38 @@ class EcrStackStack(Stack):
             runtime= _lambda.Runtime.PYTHON_3_11,
             handler="download_data-s3.",
             code=_lambda.Code.from_asset("rag/download-lambda"),
-            role=rag_process_function_role
+            role=data_download_function_role
         )
         html_data_bucket.grant_read_write(data_download_lambda)
+
+        # Vectorization IAM stuff
+        vectorization_function_policy_doc = iam.PolicyDocument(
+            statements=[
+                iam.PolicyStatement(
+                    actions=["s3:GetObject", "ecr:PutImage"],
+                    resources=[html_data_bucket._get_resource_arn_attribute(), repo._get_resource_arn_attribute()],
+                    effect=iam.Effect.ALLOW
+                )
+            ]
+        )
+
+        vectorization_function_role = iam.Role(
+            self,
+            "Vectorization-Function-Exec-Role",
+            role_name= RESOURCE_PREFIX + "vectorization-func-exec-role",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            inline_policies=[
+                vectorization_function_policy_doc
+            ]
+        )
+        # Vectorization function
+        vectorization_lambda = _lambda.Function(
+            self,
+            "Vectorization-Function",
+            function_name=RESOURCE_PREFIX + "vectorization-function",
+            runtime=_lambda.Runtime.PYTHON_3_11,
+            handler="",
+            code=_lambda.Code.from_asset("rag/"),
+            role=vectorization_function_role
+        )
 
