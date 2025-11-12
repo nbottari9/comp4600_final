@@ -98,8 +98,11 @@ class EcrStackStack(Stack):
             "Vectorization-Function",
             function_name=RESOURCE_PREFIX + "vectorization-function",
             runtime=_lambda.Runtime.PYTHON_3_11,
-            handler="",
-            code=_lambda.Code.from_asset("rag/"),
+            handler="download-data-s3.handler",
+            code=_lambda.Code.from_asset("rag/download-lambda"),
+            environment = {
+                'BUCKET_NAME': html_data_bucket.bucket_name
+            },
             role=vectorization_function_role
         )
 
