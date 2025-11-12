@@ -10,7 +10,7 @@ if [[ "$(ls ./html > /dev/null)" ]]; then
     fi
 fi
 
-if ! ./fetch_data.sh "$1"; then
+if ! ./fetch-data.sh "$1"; then
    echo "ERROR: Incorrect args"
    echo "Usage: ./build-rag <DATA-LIST> <MODE> <DIRECTORY/OCI-IMAGE>"
    exit 1
