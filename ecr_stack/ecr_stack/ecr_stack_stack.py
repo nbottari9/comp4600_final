@@ -18,4 +18,6 @@ class EcrStackStack(Stack):
             repository_name="gcp_ecr_repository",
             removal_policy=RemovalPolicy.DESTROY
         )
+
+        
         
