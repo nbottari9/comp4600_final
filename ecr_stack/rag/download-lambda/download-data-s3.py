@@ -120,6 +120,12 @@ def main():
     asyncio.run(fetch_data(args.links_file_path, args.s3_bucket_name))
 
 
+def handler(event, context):
+    links_file_path = "links.txt"
+    s3_bucket_name = os.environ['BUCKET_NAME'] 
+    asyncio.run(fetch_data(links_file_path, s3_bucket_name))
+
+
 if __name__ == "__main__":
     main()
 
