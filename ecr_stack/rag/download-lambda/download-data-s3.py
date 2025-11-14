@@ -46,8 +46,9 @@ def extract_s3_key_from_url(url: str) -> str:
     if parts:
         key = parts[-1]  # last non-empty segment
     else:
-        # fallback if URL has no path, e.g. "https://example.com"
-        key = parsed.netloc
+        # fallback if URL has no path, e.g. "https://example.com" and add html file ext
+        key = parsed.netloc 
+        key += ".html"
     return key
 
 async def fetch_data(links_path: str, s3_bucket_name: str | None):
