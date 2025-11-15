@@ -67,7 +67,7 @@ class EcrStackStack(Stack):
             "Data-Downloading-Function",
             function_name= RESOURCE_PREFIX + "data-downloading-function",
             runtime= _lambda.Runtime.PYTHON_3_11,
-            handler="download_data-s3.",
+            handler="download_data-s3.handler",
             code=_lambda.Code.from_asset("rag/download-lambda"),
             role=data_download_function_role
         )
@@ -99,10 +99,11 @@ class EcrStackStack(Stack):
             "Vectorization-Function",
             function_name=RESOURCE_PREFIX + "vectorization-function",
             runtime=_lambda.Runtime.PYTHON_3_11,
-            handler="download-data-s3.handler",
-            code=_lambda.Code.from_asset("rag/download-lambda"),
+            handler="vectorize-push-ecr.handler",
+            code=_lambda.Code.from_asset("rag/vectorize-lambda"),
             environment = {
-                'BUCKET_NAME': html_data_bucket.bucket_name
+                'BUCKET_NAME': html_data_bucket.bucket_name,
+                'ECR_REPO_URI': repo.repository_uri
             },
             role=vectorization_function_role
         )
