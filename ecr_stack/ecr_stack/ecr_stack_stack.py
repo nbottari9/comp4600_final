@@ -113,7 +113,8 @@ class EcrStackStack(Stack):
         # )
 
 
-        # Vectorization EC2 IAM Role
+        # Vectorization EC2 Setup
+        ## EC2 IAM Role
         vect_ec2_role = iam.Role(
             self,
             "Vectorization-EC2-Role",
@@ -123,18 +124,33 @@ class EcrStackStack(Stack):
                 "Vectorization-Policy-Doc": 
             }
         )
-        # Vectorization EC2 Instance
-        ## Ubuntu AMI source: https://cloud-images.ubuntu.com/locator/ec2/
+
+        ## Vectorization EC2 Instance
+        ### Ubuntu AMI source: https://cloud-images.ubuntu.com/locator/ec2/
         with open(os.path.join(os.path.dirname(__file__), "./rag/vectorize_lambda.sh"), "r") as file:
             user_data_script = file.read()
-
+        ### Block storage for EC2
+        ebs_vol = ec2.BlockDevice(
+            device_name="/dev/block-device",
+            volume=ec2.BlockDeviceVolume.ebs(
+                volume_size=15,
+                volume_type=ec2.EbsDeviceVolumeType.GP3,
+                encrypted=False,    # Set to True if we need to
+                delete_on_termination=True
+            )
+        )
         vectorization_ec2 = ec2.Instance(
             self,
             "vectorization_ec2_instance",
             machine_image=ec2.MachineImage.generic_linux({
                 "us-east-1": "ami-083f1fc4f8bcff379"
             }),
+            instance_type=ec2.InstanceType.of(
+                ec2.InstanceClass.T3,
+                ec2.InstanceSize.MICRO
+            ),
+            block_devices=[ebs_vol],
             role=vect_ec2_role,
-            user_data=ec2.UserData.custom(user_data_script)
+            user_data=ec2.UserData.custom(user_data_script),
         )
 
