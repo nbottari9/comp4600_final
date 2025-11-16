@@ -115,18 +115,16 @@ class EcrStackStack(Stack):
         # )
 
 
-        # Vectorization EC2 Setup
-        ## EC2 IAM Role
-        vect_ec2_role = iam.Role(
-            self,
-            "Vectorization-EC2-Role",
-            role_name=RESOURCE_PREFIX+"vect-ec2-role",
-            assumed_by=iam.ServicePrincipal("ec2.amazon.com"),
-            inline_policies={
-                "Vectorization-Policy-Doc": 
-            }
+        # Ansible EC2 Setup
+        ## EC2 SSM Role
+        ec2_ssm_role = iam.Role(
+            self, "EC2SSMRole",
+            assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managaed_policy_name("AmazonSSMManagedInstanceCore")
+            ]
         )
-        ## Vectorization EC2 Instance
+        ## Ansible EC2 Instance
         ### Ubuntu AMI source: https://cloud-images.ubuntu.com/locator/ec2/
         ### 15GB block storage for EC2
         ebs_vol = ec2.BlockDevice(
@@ -138,7 +136,11 @@ class EcrStackStack(Stack):
                 delete_on_termination=True
             )
         )
-        vectorization_ec2 = ec2.Instance(
+        ### TODO: VPC for the instance
+        ### Ansible install script for Ubuntu
+        ansible_install_script = "sudo apt update && sudo apt install python3-pip && sudo pip install --user ansible"
+        ### The instance itself
+        ansible_ec2 = ec2.Instance(
             self,
             "vectorization_ec2_instance",
             machine_image=ec2.MachineImage.generic_linux({
@@ -149,6 +151,7 @@ class EcrStackStack(Stack):
                 ec2.InstanceSize.MICRO
             ),
             block_devices=[ebs_vol],
-            role=vect_ec2_role,
+            role=ec2_ssm_role,
+            user_data=ec2.UserData.custom(ansible_install_script)
         )
 
