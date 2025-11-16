@@ -1,3 +1,5 @@
+# Purpose: Push vectorized data as an OCI Artifact onto ECR
+
 from aws_cdk import (
     # Duration,
     Stack,
