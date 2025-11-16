@@ -11,6 +11,7 @@ from aws_cdk import (
     aws_ec2 as ec2
 )
 from constructs import Construct
+from constructs.policy_loader import PolicyLoader
 import os
 
 RESOURCE_PREFIX = "gcp-ecr-stack-"
@@ -20,7 +21,7 @@ class EcrStackStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        
+        policies = PolicyLoader(self, "PolicyLoader")
 
         repo = ecr.Repository(
             self,
@@ -78,15 +79,15 @@ class EcrStackStack(Stack):
         html_data_bucket.grant_read_write(data_download_lambda)
 
         # Vectorization IAM stuff
-        # vectorization_function_policy_doc = iam.PolicyDocument(
-        #     statements=[
-        #         iam.PolicyStatement(
-        #             actions=["s3:GetObject", "ecr:PutImage"],
-        #             resources=[html_data_bucket.bucket_arn, repo.repository_arn ],
-        #             effect=iam.Effect.ALLOW
-        #         )
-        #     ]
-        # )
+        vectorization_function_policy_doc = iam.PolicyDocument(
+            statements=[
+                iam.PolicyStatement(
+                    actions=["s3:GetObject", "ecr:PutImage"],
+                    resources=[html_data_bucket.bucket_arn, repo.repository_arn ],
+                    effect=iam.Effect.ALLOW
+                )
+            ]
+        )
 
         # vectorization_function_role = iam.Role(
         #     self,
@@ -111,7 +112,17 @@ class EcrStackStack(Stack):
         #     },
         #     role=vectorization_function_role
         # )
-
+        
+        # Vectorization IAM policy doc
+        vectorization_function_policy_doc = iam.PolicyDocument(
+            statements=[
+                iam.PolicyStatement(
+                    actions=["s3:GetObject", "ecr:PutImage"],
+                    resources=[html_data_bucket.bucket_arn, repo.repository_arn ],
+                    effect=iam.Effect.ALLOW
+                )
+            ]
+        )
 
         # Vectorization EC2 IAM Role
         vect_ec2_role = iam.Role(
