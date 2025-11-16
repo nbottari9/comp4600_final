@@ -30,7 +30,7 @@ class Comp4600FinalStack(Stack):
         repo = ecr.Repository(
             self,
             "OCI-Repository",
-            repository_name= RESOURCE_PREFIX + "repository",
+            repository_name= RESOURCE_PREFIX + "ecr-repository",
             removal_policy=RemovalPolicy.DESTROY,
         )
 
