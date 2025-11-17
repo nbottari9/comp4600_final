@@ -3,11 +3,11 @@ import os
 
 import aws_cdk as cdk
 
-from ecr_stack.ecr_stack_stack import EcrStackStack
+from rag_cdk.rag_cdk_stack import RagCdkStack
 
 
 app = cdk.App()
-EcrStackStack(app, "GcpEcrStack",
+RagCdkStack(app, "RagCdkStack",
     # If you don't specify 'env', this stack will be environment-agnostic.
     # Account/Region-dependent features and context lookups will not work,
     # but a single synthesized template can be deployed anywhere.

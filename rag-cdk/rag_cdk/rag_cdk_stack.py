@@ -1,0 +1,46 @@
+from aws_cdk import (
+    # Duration,
+    Stack,
+    aws_ec2 as ec2
+)
+from constructs import Construct
+
+RESOURCE_PREFIX = "gcp-rag-cdk-"
+
+class RagCdkStack(Stack):
+
+    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+        
+        vpc = ec2.Vpc.from_lookup(self, "VPC", is_default=True)
+        
+        security_group = ec2.SecurityGroup(
+            self, "InstanceSG",
+            vpc=vpc,
+            description="Allow SSH Access",
+            allow_all_outbound=True
+        )
+            
+    
+        security_group.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(22), "Allow SSH Access")
+        
+        role = iam.Role(
+            self, "InstanceRole",
+            assumed_by=iam.ServicePrincipal("ec2.amazonaws.com")
+    
+    
+        instance = ec2.Instance(
+            self, RESOURCE_PREFIX + "RAG-Instance",
+            instance_type=ec2.InstanceType("t3.micro"),
+            machine_image=ec2.machineImage.latest_amazon_linux(),
+            vpc=vpc,
+            security_group=security_group,
+            role=role
+        )
+
+        instance.add_user_data(
+            "ADD THE DEPS INSTALL SCRIPT HERE",
+        )
+            
+        
+    
