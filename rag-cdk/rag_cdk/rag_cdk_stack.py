@@ -42,11 +42,10 @@ class RagCdkStack(Stack):
             role=role
         )
     
-        repo_uri = ecr.Repository.from_repository_name("gcp_ecr_repository").registry_uri
         instance.add_user_data(
             "ADD THE DEPS INSTALL SCRIPT HERE",
             "git clone https://github.com/nbottari9/comp4600_final.git",
-            f"export ECR_REPO={repo_uri}",
+            f"export ECR_REPO=", # IMPORTANT: Export ecr repo URI - TODO
             "cd comp4600_final/rag-scripts/ && ./build_rag links.txt ecr rag-image"
         )
             
