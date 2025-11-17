@@ -26,3 +26,6 @@ jobs:
           aws-region: us-east-1
 
       - name: start up ECS with Fargate(?)
+        shell: bash
+        run: |
+        aws ec2 
