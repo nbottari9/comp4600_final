@@ -42,11 +42,15 @@ class RagCdkStack(Stack):
         )
     
         
-        repo_uri = ecr.Repository.from_repository_name("gcp_ecr_repository").repository_uri
+        # repo_uri = ecr.Repository.from_repository_name("gcp_ecr_repository").repository_uri
         instance.add_user_data(
-            "ADD THE DEPS INSTALL SCRIPT HERE",
+            "curl -LsSf https://astral.sh/uv/install.sh | sh",
+            "curl -fsSL https://ramalama.ai/install.sh | bash",
+            "uv add aiohttp",
+           # f"export REPO_URI={repo_uri}", 
             "git clone https://github.com/nbottari9/comp4600_final.git",
-            "cd comp4600_final/rag-scripts/ && ./build_rag links.txt ecr rag-image"
+            "cd comp4600_final/rag-scripts/",
+            "uv run download_parallel.py && ./vectorize.sh"
         )
             
         
