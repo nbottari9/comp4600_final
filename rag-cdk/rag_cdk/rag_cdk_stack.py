@@ -38,7 +38,9 @@ class RagCdkStack(Stack):
             machine_image=ec2.MachineImage.latest_amazon_linux(),
             vpc=vpc,
             security_group=security_group,
-            role=role
+            role=role,
+            key_name:'Gurpreet-KP',
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC)
         )
     
         
