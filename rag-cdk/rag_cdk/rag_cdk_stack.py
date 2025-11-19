@@ -35,7 +35,7 @@ class RagCdkStack(Stack):
         instance = ec2.Instance(
             self, RESOURCE_PREFIX + "RAG-Instance",
             instance_type=ec2.InstanceType("t3.micro"),
-            machine_image=ec2.machineImage.latest_amazon_linux(),
+            machine_image=ec2.MachineImage.latest_amazon_linux(),
             vpc=vpc,
             security_group=security_group,
             role=role
