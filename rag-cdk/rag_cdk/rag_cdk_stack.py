@@ -1,7 +1,9 @@
 from aws_cdk import (
     # Duration,
     Stack,
-    aws_ec2 as ec2
+    aws_ec2 as ec2,
+    aws_iam as iam,
+    aws_ecr as ecr
 )
 from constructs import Construct
 
@@ -27,6 +29,7 @@ class RagCdkStack(Stack):
         role = iam.Role(
             self, "rag-instance-sg",
             assumed_by=iam.ServicePrincipal("ec2.amazonaws.com")
+        )
     
     
         instance = ec2.Instance(
@@ -38,7 +41,8 @@ class RagCdkStack(Stack):
             role=role
         )
     
-    
+        
+        repo_uri = ecr.Repository.from_repository_name("gcp_ecr_repository").repository_uri
         instance.add_user_data(
             "ADD THE DEPS INSTALL SCRIPT HERE",
             "git clone https://github.com/nbottari9/comp4600_final.git",
