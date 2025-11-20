@@ -53,5 +53,3 @@ class RagCdkStack(Stack):
             "uv run download_parallel.py && ./vectorize.sh"
         )
             
-        
-    
