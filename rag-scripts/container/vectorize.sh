@@ -8,22 +8,8 @@ if [ $# -lt 2 ]; then
     echo "Usage: vectorize.sh <local|mac|ecr> <directory/oci-image-name>"
     exit 1
 fi
-
-REPO_NAME="gcp-ecr-repo"
-
-# Get repository info from ECR
-OUTPUT=$(aws ecr describe-repositories --repository-names "$REPO_NAME" --output json 2>/dev/null)
-
-# Extract repositoryUri using jq
-REPO_URI=$(echo "$OUTPUT" | jq -r '.repositories[0].repositoryUri')
-
-if [ -z "$REPO_URI" ] || [ "$REPO_URI" == "null" ]; then
-    echo "Failed to retrieve repository URI. Check that the repository exists and AWS CLI is configured."
-    exit 1
-fi
-
-# ecr_repo="620339869704.dkr.ecr.us-east-1.amazonaws.com/gcp_ecr_repository:latest"
-html_files="./html/"
+REPO_URI="620339869704.dkr.ecr.us-east-1.amazonaws.com/gcp_ecr_repository"
+html_files="./html_data/"
 
 # if local directory, elif local directory Mac, else ECR 
 case "$1" in
@@ -40,8 +26,6 @@ case "$1" in
         aws ecr get-login-password --region us-east-1 | ramalama login --username AWS --password-stdin $REPO_URI
         echo "Vectorizing and pushing to ecr..."
         ramalama rag $html_files $2 && podman push $2 $REPO_URI
-        
-        # Self-destruct cloudformation stack
         
         ;;
     *)
